@@ -1,0 +1,7 @@
+{
+  "crons": [
+    { "path": "/api/cron/daily", "schedule": "0 6 * * *" },
+    { "path": "/api/cron/odds", "schedule": "0 8,16 * * *" },
+    { "path": "/api/cron/live", "schedule": "* 15-23 * * *" }
+  ]
+}
