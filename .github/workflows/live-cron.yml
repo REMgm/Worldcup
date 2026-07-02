@@ -1,0 +1,31 @@
+# Live-tick trigger for Vercel Hobby, where sub-daily Vercel Cron is not
+# available (spec §4 wants * 15-23 * * *). Opt-in: set the repository
+# variable LIVE_CRON_ENABLED=true and the secrets below. On Vercel Pro,
+# use vercel.pro.json instead and leave this disabled.
+#
+# Secrets required:
+#   APP_URL      e.g. https://worldcup-pulse.vercel.app
+#   CRON_SECRET  same value as the Vercel env var
+name: live-cron
+
+on:
+  schedule:
+    # GitHub Actions minimum granularity is 5 minutes; the route's own
+    # guard still exits with zero provider calls when nothing is live.
+    - cron: "*/5 15-23 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  tick:
+    if: vars.LIVE_CRON_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Hit /api/cron/live
+        run: |
+          curl -sf -X GET "$APP_URL/api/cron/live" \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            -o /dev/null -w "status: %{http_code}\n"
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}

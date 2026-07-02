@@ -36,7 +36,7 @@ Copy `.env.example` → `.env.local` for local dev.
 
 ## Data & cron schedule (`vercel.json`)
 
-| Route | Schedule | Job |
+| Route | Spec schedule (§4) | Job |
 |---|---|---|
 | `/api/cron/daily` | 06:00 UTC | fixtures next 7 days, top scorers, form snapshots, hot-take regeneration; resolves + pins league/season on first run |
 | `/api/cron/odds` | 08:00 & 16:00 UTC | odds snapshots for fixtures in the next 48h, append-only for movement charts |
@@ -44,7 +44,7 @@ Copy `.env.example` → `.env.local` for local dev.
 
 All cron routes require `Authorization: Bearer $CRON_SECRET`. Provider request counts are logged to the `config` table daily with a warning at 80% of the free-tier budget (100 req/day).
 
-> **Vercel plan note:** minute-level cron (`/api/cron/live`) requires a paid Vercel plan. On Hobby, cron jobs are limited to daily schedules — reduce the live schedule or trigger it externally; the in-route guard protects quota either way.
+> **Vercel plan note:** Hobby rejects sub-daily cron (deployment fails), so the committed `vercel.json` runs `daily` + `odds` once a day. The full spec schedule lives in `vercel.pro.json` — swap it in on a Pro plan. For live coverage on Hobby, enable `.github/workflows/live-cron.yml` (set repo variable `LIVE_CRON_ENABLED=true` plus `APP_URL`/`CRON_SECRET` secrets); it hits `/api/cron/live` every 5 minutes during the match window, and the route's guard still makes zero provider calls when nothing is live.
 
 ## Supabase
 
