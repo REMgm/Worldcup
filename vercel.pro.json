@@ -1,5 +1,6 @@
 {
   "//": "Spec §4 schedule — requires Vercel Pro (sub-daily cron). Replace vercel.json with this file after upgrading.",
+  "framework": "nextjs",
   "crons": [
     { "path": "/api/cron/daily", "schedule": "0 6 * * *" },
     { "path": "/api/cron/odds", "schedule": "0 8,16 * * *" },
