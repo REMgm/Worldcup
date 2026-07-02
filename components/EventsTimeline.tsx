@@ -41,6 +41,7 @@ export default function EventsTimeline({ fixture }: { fixture: FixtureWithTeams 
               {ev.extra ? `+${ev.extra}` : ""}&rsquo;
             </span>
             <span aria-hidden>{icon(ev.type, ev.detail)}</span>
+            <span className="sr-only">{ev.detail || ev.type}</span>
             <span className="min-w-0 flex-1">
               <span className={`block truncate text-sm ${isGoal ? "font-bold text-flood" : "text-flood-dim"}`}>
                 {ev.player ?? ev.detail}

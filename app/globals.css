@@ -30,43 +30,45 @@ body {
   color: var(--color-pitch-900);
 }
 
-/* Scores set huge, tabular, tight tracking — the typographic signature (§8). */
-.score-display {
-  font-family: var(--font-data);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.06em;
-  font-weight: 700;
-}
-
-.data-nums {
-  font-family: var(--font-data);
-  font-variant-numeric: tabular-nums;
-}
-
-/* Glassmorphism is allowed on overlay layers only (ticker, modals) — never
-   on content cards (§8). */
-.glass-overlay {
-  background: color-mix(in srgb, var(--color-pitch-900) 72%, transparent);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid color-mix(in srgb, var(--color-flood) 10%, transparent);
-}
-
-/* Live status pulse: scale 1→1.35→1 opacity loop, 2s, only while LIVE (§7). */
-@keyframes live-pulse {
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 1;
+@layer components {
+  /* Scores set huge, tabular, tight tracking — the typographic signature (§8). */
+  .score-display {
+    font-family: var(--font-data);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.06em;
+    font-weight: 700;
   }
-  50% {
-    transform: scale(1.35);
-    opacity: 0.55;
-  }
-}
 
-.live-dot {
-  animation: live-pulse 2s ease-in-out infinite;
+  .data-nums {
+    font-family: var(--font-data);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Glassmorphism is allowed on overlay layers only (ticker, modals) — never
+     on content cards (§8). */
+  .glass-overlay {
+    background: color-mix(in srgb, var(--color-pitch-900) 72%, transparent);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid color-mix(in srgb, var(--color-flood) 10%, transparent);
+  }
+
+  /* Live status pulse: scale 1→1.35→1 opacity loop, 2s, only while LIVE (§7). */
+  @keyframes live-pulse {
+    0%,
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.35);
+      opacity: 0.55;
+    }
+  }
+
+  .live-dot {
+    animation: live-pulse 2s ease-in-out infinite;
+  }
 }
 
 /* Reduced motion disables loops globally (§7 hard rule). Confetti and
@@ -80,23 +82,25 @@ body {
   }
 }
 
-/* Blurred hot-take headline pre-reveal (§7). */
-.take-blur {
-  filter: blur(10px);
-  user-select: none;
-  transition: filter 0.25s ease;
-}
+@layer components {
+  /* Blurred hot-take headline pre-reveal (§7). */
+  .take-blur {
+    filter: blur(10px);
+    user-select: none;
+    transition: filter 0.25s ease;
+  }
 
-.take-blur.revealed {
-  filter: blur(0);
-}
+  .take-blur.revealed {
+    filter: blur(0);
+  }
 
-/* Bracket horizontal snap scroll on mobile (§9). */
-.bracket-scroll {
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-}
+  /* Bracket horizontal snap scroll on mobile (§9). */
+  .bracket-scroll {
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
 
-.bracket-scroll > * {
-  scroll-snap-align: center;
+  .bracket-scroll > * {
+    scroll-snap-align: center;
+  }
 }

@@ -55,7 +55,8 @@ export default function PredictionMeter({
               : { type: "spring", stiffness: 120, damping: 20 }
           }
         />
-        {/* needle */}
+        {/* needle — transformBox: view-box makes the origin resolve in SVG
+            user units, so it pivots on the gauge hub, not its own bbox */}
         <motion.line
           x1="100"
           y1="95"
@@ -64,7 +65,7 @@ export default function PredictionMeter({
           stroke="#F5F2E8"
           strokeWidth="2.5"
           strokeLinecap="round"
-          style={{ originX: "100px", originY: "95px" }}
+          style={{ transformBox: "view-box", transformOrigin: "100px 95px" }}
           initial={{ rotate: -180 }}
           animate={{ rotate: angle }}
           transition={

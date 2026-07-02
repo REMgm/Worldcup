@@ -3,7 +3,13 @@ import BracketTree from "@/components/BracketTree";
 import Hero from "@/components/Hero";
 import HotTakeCard from "@/components/HotTakeCard";
 import MatchCard from "@/components/MatchCard";
-import { getFixtures, getHotTakes, getLiveSnapshot, isDemoData } from "@/lib/data";
+import {
+  getFixtures,
+  getHotTakes,
+  getLiveSnapshot,
+  getOddsDeltas,
+  isDemoData,
+} from "@/lib/data";
 import { SIGNAL_LIME } from "@/lib/teamColors";
 
 // Cache-first (§0.2): pages render from the Supabase cache (or demo data)
@@ -23,6 +29,7 @@ export default async function Home() {
     .slice(0, 4);
   const slate = [...live, ...today.filter((f) => !live.some((l) => l.id === f.id))].slice(0, 6);
   const cards = slate.length ? slate : upcoming;
+  const oddsDeltas = await getOddsDeltas(cards.map((f) => f.id));
   const takesById = new Map(fixtures.map((f) => [f.id, f]));
 
   return (
@@ -40,7 +47,7 @@ export default async function Home() {
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           {cards.map((f) => (
-            <MatchCard key={f.id} fixture={f} />
+            <MatchCard key={f.id} fixture={f} oddsDelta={oddsDeltas.get(f.id) ?? 0} />
           ))}
         </div>
       </section>

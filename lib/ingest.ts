@@ -40,8 +40,21 @@ export async function upsertTeams(sb: SupabaseClient, teams: Team[]): Promise<nu
 
 export async function upsertFixtures(sb: SupabaseClient, fixtures: Fixture[]): Promise<number> {
   if (!fixtures.length) return 0;
-  const { error } = await sb.from("fixtures").upsert(fixtures.map(fixtureRow));
-  if (error) throw new Error(`fixtures upsert: ${error.message}`);
+  // Date-range provider responses often omit event timelines that live
+  // ticks already stored — omit the events key on those rows so the upsert
+  // leaves the column untouched instead of nulling it. (PostgREST bulk
+  // upserts need identical keys per row, hence two batches.)
+  const rows = fixtures.map(fixtureRow);
+  const withEvents = rows.filter((r) => r.events != null);
+  const withoutEvents = rows
+    .filter((r) => r.events == null)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    .map(({ events, ...rest }) => rest);
+  for (const batch of [withEvents, withoutEvents]) {
+    if (!batch.length) continue;
+    const { error } = await sb.from("fixtures").upsert(batch);
+    if (error) throw new Error(`fixtures upsert: ${error.message}`);
+  }
   return fixtures.length;
 }
 
@@ -64,11 +77,13 @@ export async function snapshotScorers(
   );
   if (pErr) throw new Error(`players upsert: ${pErr.message}`);
 
+  const today = new Date().toISOString().slice(0, 10);
   const ids = players.map((p) => p.id);
   const { data: prevRows } = await sb
     .from("player_form")
     .select("player_id, rating, snapshot_date")
     .in("player_id", ids)
+    .lt("snapshot_date", today) // exclude today's row so same-day re-runs keep the real delta
     .order("snapshot_date", { ascending: false });
   const prevRating = new Map<number, number>();
   for (const row of prevRows ?? []) {
@@ -77,7 +92,6 @@ export async function snapshotScorers(
     }
   }
 
-  const today = new Date().toISOString().slice(0, 10);
   const snapshots = scorers.map((s) => ({
     player_id: s.player.id,
     snapshot_date: today,

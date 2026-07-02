@@ -114,7 +114,7 @@ export default function OddsShift({
           {away?.name ?? "Away"}
         </span>
       </div>
-      <p className="mt-3 text-[10px] italic text-flood-dim/60">
+      <p className="mt-3 text-[11px] italic text-flood-dim">
         Editorial context, not betting advice.
       </p>
     </div>

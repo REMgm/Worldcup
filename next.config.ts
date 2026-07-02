@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "crests.football-data.org" }, // fallback provider crests
       { protocol: "https", hostname: "a.espncdn.com" }, // ESPN country flags
       { protocol: "https", hostname: "**.espncdn.com" },
-      { protocol: "https", hostname: "**.supabase.co" }, // Higgsfield caricatures via Supabase storage
+      { protocol: "https", hostname: "svjepmqfemctnyzzyxwc.supabase.co" }, // Higgsfield caricatures via this project's storage
     ],
   },
 };

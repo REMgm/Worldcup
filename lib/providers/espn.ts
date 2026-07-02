@@ -10,7 +10,7 @@ import type {
   Team,
 } from "@/lib/types";
 import { americanToDecimal, impliedProbabilities } from "@/lib/odds";
-import { TEAM_COLORS } from "@/lib/teamColors";
+import { codeForName, TEAM_COLORS } from "@/lib/teamColors";
 import type { FootballProvider } from "./types";
 
 const SITE = "https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world";
@@ -31,7 +31,9 @@ const STAGE_WINDOWS: Array<[string, string, Stage]> = [
 ];
 
 function stageFromText(text: string): Stage | null {
-  const r = text.toLowerCase();
+  // ESPN's per-event round lives in season.slug, hyphenated ("round-of-32").
+  const r = text.toLowerCase().replace(/[-_]/g, " ");
+  if (r.includes("group") || r.includes("matchday")) return null; // explicit group stage
   if (r.includes("round of 32")) return "R32";
   if (r.includes("round of 16")) return "R16";
   if (r.includes("quarter")) return "QF";
@@ -108,11 +110,12 @@ export class EspnProvider implements FootballProvider {
     const id = Number(raw?.id);
     if (!id) return null;
     if (!this.teams.has(id)) {
-      const code: string | null = raw.abbreviation ?? null;
+      const name = raw.displayName ?? raw.name ?? raw.shortDisplayName ?? "Unknown";
+      const code: string | null = raw.abbreviation ?? codeForName(name) ?? null;
       const colors = code ? TEAM_COLORS[code] : undefined;
       this.teams.set(id, {
         id,
-        name: raw.displayName ?? raw.name ?? raw.shortDisplayName ?? "Unknown",
+        name,
         code,
         flag_url: raw.flag?.href ?? raw.logo ?? null,
         primary_color: colors?.primary ?? null,
@@ -168,6 +171,8 @@ export class EspnProvider implements FootballProvider {
     ]
       .filter(Boolean)
       .join(" ");
+    const norm = noteText.toLowerCase().replace(/[-_]/g, " ");
+    if (norm.includes("group") || norm.includes("matchday")) return null; // explicit group stage — never date-classify
     const stage = stageFromText(noteText) ?? stageFromDate(String(event.date ?? ""));
     if (!stage) return null; // group stage / unknown — knockout product only
 
@@ -183,8 +188,9 @@ export class EspnProvider implements FootballProvider {
     const awayShootout = away?.shootoutScore != null ? Number(away.shootoutScore) : null;
     if (status === "FT" && homeShootout != null && awayShootout != null) status = "PEN";
 
+    // ESPN reports "0" for unplayed fixtures — store null until kickoff.
     const score = (c: any) =>
-      c?.score != null && c.score !== "" ? Number(c.score) : null;
+      status !== "NS" && c?.score != null && c.score !== "" ? Number(c.score) : null;
 
     return {
       id: Number(event.id),

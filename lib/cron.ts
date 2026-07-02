@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ApiFootballConfig } from "@/lib/providers/apiFootball";
 
@@ -5,7 +6,10 @@ import type { ApiFootballConfig } from "@/lib/providers/apiFootball";
 export function cronAuthorized(req: Request): boolean {
   const secret = process.env.CRON_SECRET;
   if (!secret) return false;
-  return req.headers.get("authorization") === `Bearer ${secret}`;
+  const provided = req.headers.get("authorization") ?? "";
+  const expected = Buffer.from(`Bearer ${secret}`);
+  const actual = Buffer.from(provided);
+  return actual.length === expected.length && timingSafeEqual(actual, expected);
 }
 
 export const SEASON = Number(process.env.WORLD_CUP_SEASON ?? 2026);

@@ -10,7 +10,7 @@ import type {
   Team,
 } from "@/lib/types";
 import { impliedProbabilities } from "@/lib/odds";
-import { TEAM_COLORS } from "@/lib/teamColors";
+import { codeForName, TEAM_COLORS } from "@/lib/teamColors";
 import type { FootballProvider } from "./types";
 
 const BASE = "https://v3.football.api-sports.io";
@@ -145,7 +145,9 @@ export class ApiFootballProvider implements FootballProvider {
     const id = raw?.id;
     if (!id) return null;
     if (!this.teams.has(id)) {
-      const code: string | null = raw.code ?? null;
+      // Fixture/topscorer responses have no `code` field — derive the trigram
+      // from the name so colors and trigram displays work on the real API.
+      const code: string | null = raw.code ?? codeForName(raw.name) ?? null;
       const colors = code ? TEAM_COLORS[code] : undefined;
       this.teams.set(id, {
         id,
@@ -298,10 +300,20 @@ export class ApiFootballProvider implements FootballProvider {
         else if (name === "goals over/under") market = "total_goals";
         else if (name === "both teams score") market = "btts";
         if (!market) continue;
-        const values: Record<string, number> = {};
+        let values: Record<string, number> = {};
         for (const v of bet.values ?? []) {
           const key = String(v.value ?? "").toLowerCase().replace(/[^a-z0-9.]+/g, "_");
           values[key] = Number(v.odd);
+        }
+        // The Over/Under bet carries every goal line in one array; only one
+        // line is mutually exclusive, so normalize within the 2.5 pair —
+        // normalizing across all lines deflates every probability 4–6x.
+        if (market === "total_goals") {
+          const pair: Record<string, number> = {};
+          if (values["over_2.5"] != null) pair["over_2.5"] = values["over_2.5"];
+          if (values["under_2.5"] != null) pair["under_2.5"] = values["under_2.5"];
+          if (Object.keys(pair).length < 2) continue;
+          values = pair;
         }
         rows.push({
           fixture_id: fixtureId,

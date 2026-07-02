@@ -40,10 +40,12 @@ export default function PlayerCard({ player }: { player: PlayerWithForm }) {
         animate={{ rotateY: flipped ? 180 : 0 }}
         transition={reduced ? { duration: 0 } : settle}
         aria-pressed={flipped}
-        aria-label={`${player.name} — tap for stat sheet`}
       >
         {/* front */}
-        <div className="absolute inset-0 overflow-hidden rounded-2xl border border-flood/5 bg-pitch-800 [backface-visibility:hidden]">
+        <div
+          aria-hidden={flipped}
+          className="absolute inset-0 overflow-hidden rounded-2xl border border-flood/5 bg-pitch-800 [backface-visibility:hidden]"
+        >
           <div
             className="relative h-52 w-full"
             style={{
@@ -88,7 +90,10 @@ export default function PlayerCard({ player }: { player: PlayerWithForm }) {
         </div>
 
         {/* back */}
-        <div className="absolute inset-0 overflow-hidden rounded-2xl border border-flood/10 bg-pitch-700 p-4 [backface-visibility:hidden] [transform:rotateY(180deg)]">
+        <div
+          aria-hidden={!flipped}
+          className="absolute inset-0 overflow-hidden rounded-2xl border border-flood/10 bg-pitch-700 p-4 [backface-visibility:hidden] [transform:rotateY(180deg)]"
+        >
           <div className="font-display text-base font-extrabold text-flood">
             {player.name}
           </div>

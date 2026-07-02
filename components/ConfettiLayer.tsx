@@ -34,7 +34,7 @@ export default function ConfettiLayer() {
         spread: 75,
         startVelocity: 42,
         decay: 0.9,
-        ticks: 160, // ~0.8s of life (§7: 350 count, 0.8s)
+        ticks: 55, // ≈0.9s of particle life (§7: 350 count, 0.8s burst)
         origin: { x: burst.x ?? 0.5, y: burst.y ?? 0.6 },
         colors: burst.colors?.length ? burst.colors : [SIGNAL_LIME, "#F5F2E8"],
         disableForReducedMotion: true,

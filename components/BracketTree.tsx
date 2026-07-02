@@ -72,6 +72,7 @@ function BracketNode({
 }) {
   const winner = winnerOf(fixture);
   const live = fixture.status === "LIVE" || fixture.status === "HT";
+  const played = fixture.status !== "NS";
   return (
     <Link
       href={`/match/${fixture.id}`}
@@ -82,7 +83,7 @@ function BracketNode({
     >
       <TeamRow
         team={fixture.home}
-        score={fixture.home_score}
+        score={played ? fixture.home_score : null}
         pens={fixture.penalties?.home}
         winner={winner != null && winner.id === fixture.home?.id}
         live={live}
@@ -90,7 +91,7 @@ function BracketNode({
       <div className="mx-3 border-t border-flood/5" />
       <TeamRow
         team={fixture.away}
-        score={fixture.away_score}
+        score={played ? fixture.away_score : null}
         pens={fixture.penalties?.away}
         winner={winner != null && winner.id === fixture.away?.id}
         live={live}
@@ -112,7 +113,6 @@ function BracketNode({
 export default function BracketTree({ fixtures }: { fixtures: FixtureWithTeams[] }) {
   const reduced = usePrefersReducedMotion();
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [activeStage, setActiveStage] = useState<Stage>("R32");
 
   const byStage = new Map<Stage, FixtureWithTeams[]>();
   for (const stage of STAGE_ORDER) {
@@ -123,6 +123,7 @@ export default function BracketTree({ fixtures }: { fixtures: FixtureWithTeams[]
   }
   const thirdPlace = fixtures.find((f) => f.stage === "3P");
   const stages = STAGE_ORDER.filter((s) => byStage.has(s));
+  const [activeStage, setActiveStage] = useState<Stage>(stages[0] ?? "R32");
   if (!stages.length) return null;
 
   const leafCount = byStage.get(stages[0])!.length;
@@ -133,13 +134,23 @@ export default function BracketTree({ fixtures }: { fixtures: FixtureWithTeams[]
     Math.pow(2, round) * SLOT * (index + 0.5);
   const colX = (round: number) => round * (NODE_W + GUTTER);
 
-  // Connector paths between consecutive rounds.
+  // Connector paths between consecutive rounds. Adjacency: a fixture feeds
+  // the next-round tie that contains one of its teams (real bracket data
+  // pre-fills known qualifiers); kickoff-position pairing is only the
+  // fallback while both feeder slots are still undecided.
   const connectors: { d: string; color: string; round: number }[] = [];
   for (let r = 0; r < stages.length - 1; r++) {
     const current = byStage.get(stages[r])!;
     const next = byStage.get(stages[r + 1])!;
     current.forEach((f, j) => {
-      const target = Math.floor(j / 2);
+      let target = next.findIndex(
+        (n) =>
+          (f.home_team != null &&
+            (n.home_team === f.home_team || n.away_team === f.home_team)) ||
+          (f.away_team != null &&
+            (n.home_team === f.away_team || n.away_team === f.away_team)),
+      );
+      if (target === -1) target = Math.floor(j / 2);
       if (target >= next.length) return;
       const x1 = colX(r) + NODE_W;
       const y1 = centerY(r, j);
@@ -169,11 +180,13 @@ export default function BracketTree({ fixtures }: { fixtures: FixtureWithTeams[]
     <div>
       {/* ---- mobile: stage tabs + snap scroll (§9) ---- */}
       <div className="md:hidden">
-        <div className="mb-4 flex gap-2 overflow-x-auto pb-1">
+        <div role="tablist" aria-label="Bracket stage" className="mb-4 flex gap-2 overflow-x-auto pb-1">
           {[...stages, ...(thirdPlace ? (["3P"] as Stage[]) : [])].map((s) => (
             <button
               key={s}
               type="button"
+              role="tab"
+              aria-selected={activeStage === s}
               onClick={() => scrollToStage(s)}
               className={`data-nums min-h-11 shrink-0 rounded-full px-4 text-xs font-semibold transition-colors ${
                 activeStage === s

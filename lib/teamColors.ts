@@ -34,7 +34,54 @@ export const TEAM_COLORS: Record<string, { primary: string; secondary: string }>
   URU: { primary: "#7BAFD4", secondary: "#000000" },
   USA: { primary: "#B22234", secondary: "#3C3B6E" },
   UZB: { primary: "#0099B5", secondary: "#1EB53A" },
+  ALG: { primary: "#006233", secondary: "#FFFFFF" },
+  PAR: { primary: "#D52B1E", secondary: "#0038A8" },
+  CIV: { primary: "#FF8200", secondary: "#009A44" },
+  SWE: { primary: "#FFCD00", secondary: "#006AA7" },
+  COD: { primary: "#007FFF", secondary: "#F7D618" },
+  BIH: { primary: "#002F6C", secondary: "#FCD116" },
+  CPV: { primary: "#003893", secondary: "#F7D116" },
+  RSA: { primary: "#007749", secondary: "#FFB81C" },
+  JOR: { primary: "#CE1126", secondary: "#007A3D" },
+  QAT: { primary: "#8A1538", secondary: "#FFFFFF" },
+  TUN: { primary: "#E70013", secondary: "#FFFFFF" },
+  PAN: { primary: "#DA121A", secondary: "#072357" },
+  SCO: { primary: "#0065BF", secondary: "#FFFFFF" },
+  TUR: { primary: "#E30A17", secondary: "#FFFFFF" },
+  UKR: { primary: "#FFD700", secondary: "#0057B7" },
+  NGA: { primary: "#008751", secondary: "#FFFFFF" },
 };
+
+/** API-Football fixture/topscorer team objects carry no trigram — derive it
+ *  from the team name (providers that do send codes take precedence). */
+export const NAME_TO_CODE: Record<string, string> = {
+  argentina: "ARG", australia: "AUS", austria: "AUT", belgium: "BEL",
+  brazil: "BRA", canada: "CAN", colombia: "COL", croatia: "CRO",
+  denmark: "DEN", ecuador: "ECU", egypt: "EGY", england: "ENG",
+  spain: "ESP", france: "FRA", germany: "GER", ghana: "GHA",
+  iran: "IRN", "ir iran": "IRN", italy: "ITA", japan: "JPN",
+  "south korea": "KOR", "korea republic": "KOR", "saudi arabia": "KSA",
+  morocco: "MAR", mexico: "MEX", netherlands: "NED", norway: "NOR",
+  poland: "POL", portugal: "POR", senegal: "SEN", serbia: "SRB",
+  switzerland: "SUI", uruguay: "URU", "united states": "USA",
+  usa: "USA", uzbekistan: "UZB", algeria: "ALG", paraguay: "PAR",
+  "ivory coast": "CIV", "cote d'ivoire": "CIV", "côte d'ivoire": "CIV",
+  sweden: "SWE", "congo dr": "COD", "dr congo": "COD",
+  "bosnia-herzegovina": "BIH", "bosnia and herzegovina": "BIH",
+  "cape verde": "CPV", "cabo verde": "CPV", "south africa": "RSA",
+  jordan: "JOR", qatar: "QAT", tunisia: "TUN", panama: "PAN",
+  scotland: "SCO", turkey: "TUR", "türkiye": "TUR", ukraine: "UKR",
+  nigeria: "NGA", "new zealand": "NZL", wales: "WAL", greece: "GRE",
+  romania: "ROU", slovakia: "SVK", slovenia: "SVN", czechia: "CZE",
+  "costa rica": "CRC", honduras: "HON", jamaica: "JAM", chile: "CHI",
+  peru: "PER", venezuela: "VEN", bolivia: "BOL", "curaçao": "CUW",
+  curacao: "CUW", haiti: "HAI",
+};
+
+export function codeForName(name: string | null | undefined): string | null {
+  if (!name) return null;
+  return NAME_TO_CODE[name.trim().toLowerCase()] ?? null;
+}
 
 export const SIGNAL_LIME = "#C8F542";
 

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import PlayerCard from "@/components/PlayerCard";
 import PlayerCarousel from "@/components/PlayerCarousel";
-import { getPlayersWithForm } from "@/lib/data";
+import { getPlayersWithForm, playersAreDemo } from "@/lib/data";
 
 export const revalidate = 300;
 
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 export default async function PlayersPage() {
-  const players = await getPlayersWithForm();
+  const [players, demo] = await Promise.all([getPlayersWithForm(), playersAreDemo()]);
   const ranked = [...players].sort((a, b) => {
     const ra = a.form[a.form.length - 1]?.rating ?? 0;
     const rb = b.form[b.form.length - 1]?.rating ?? 0;
@@ -30,6 +30,12 @@ export default async function PlayersPage() {
         Five-day form trends from the tournament data. Tap a card for the stat
         sheet. Caricatures land as the art queue drains — photos stand in.
       </p>
+      {demo && (
+        <p className="data-nums mb-6 text-[10px] tracking-[0.14em] text-flood-dim">
+          DEMO DATA — fictional form stats; player stats need an API-Football
+          key (the keyless feed doesn&rsquo;t supply them)
+        </p>
+      )}
 
       {/* mobile: elastic drag carousel (§9) */}
       <PlayerCarousel players={ranked} />

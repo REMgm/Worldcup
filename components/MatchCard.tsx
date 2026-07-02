@@ -46,11 +46,18 @@ function StatusBlock({ fixture }: { fixture: FixtureWithTeams }) {
   );
 }
 
-export default function MatchCard({ fixture }: { fixture: FixtureWithTeams }) {
+export default function MatchCard({
+  fixture,
+  oddsDelta = 0,
+}: {
+  fixture: FixtureWithTeams;
+  /** Market movement toward the away side (§7 momentum term), from getOddsDeltas. */
+  oddsDelta?: number;
+}) {
   const played = fixture.status !== "NS";
   const homeColor = fixture.home?.primary_color ?? SIGNAL_LIME;
   const awayColor = fixture.away?.primary_color ?? SIGNAL_LIME;
-  const momentum = momentumScore(fixture);
+  const momentum = momentumScore(fixture, oddsDelta);
   const glowColor = momentum >= 0 ? awayColor : homeColor;
 
   return (
