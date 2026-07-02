@@ -47,10 +47,12 @@ export async function GET(req: Request) {
       await pinLeague(sb, pinned);
     }
 
+    // Wide window: the whole knockout bracket (played rounds included) in
+    // one range call, so BracketTree renders complete from the cache.
     const now = Date.now();
     const fixtures = await provider.getFixtures({
-      from: ymd(new Date(now - DAY)),
-      to: ymd(new Date(now + 7 * DAY)),
+      from: ymd(new Date(now - 35 * DAY)),
+      to: ymd(new Date(now + 21 * DAY)),
     });
     const teamCount = await upsertTeams(sb, provider.drainTeams());
     const fixtureCount = await upsertFixtures(sb, fixtures);

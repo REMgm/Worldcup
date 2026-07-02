@@ -12,7 +12,7 @@ Live knockout bracket, match momentum, player form and prediction reveals for th
 
 ## Architecture (the three locked decisions)
 
-1. **Single data provider.** API-Football (api-sports.io) is the only live source. football-data.org is a fallback adapter behind the same `FootballProvider` interface (`lib/providers/`), enabled only via `PROVIDER=football-data`.
+1. **Single data provider.** Exactly one adapter is active at runtime behind the `FootballProvider` interface (`lib/providers/`). With zero keys configured the default is the **keyless ESPN World Cup feed** (near real-time, unofficial/undocumented — mapped defensively). Setting `API_FOOTBALL_KEY` makes API-Football the default (the spec's primary); `PROVIDER=espn|api-football|football-data` forces an adapter explicitly.
 2. **Cache-first, never client-polling.** All provider calls happen server-side on Vercel Cron into Supabase. The client reads only from Supabase or ISR-cached route handlers (`/api/live`, revalidate 30). The `LiveTicker` island polls our own edge, never the provider.
 3. **Photoreal world, caricature players.** Environments are photoreal; players render as exaggerated caricatures (Spitting Image register) stored in `players.stylized_url`. Licensed provider photos are the fallback while the caricature queue drains. Near-photo AI likenesses of named athletes are excluded — if a render could be mistaken for a photograph, it fails QA.
 
@@ -24,9 +24,9 @@ When Supabase env vars are missing (or the cache is empty), the app renders from
 
 | Var | Purpose |
 |---|---|
-| `API_FOOTBALL_KEY` | api-sports.io key (primary provider) |
-| `FOOTBALL_DATA_TOKEN` | fallback provider, optional |
-| `PROVIDER` | unset = API-Football; `football-data` = fallback |
+| `API_FOOTBALL_KEY` | api-sports.io key — optional; presence makes API-Football the default provider |
+| `FOOTBALL_DATA_TOKEN` | football-data.org fallback, optional |
+| `PROVIDER` | force an adapter: `espn` (keyless default), `api-football`, `football-data` |
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | anon key (RLS read-only) |
 | `SUPABASE_SERVICE_ROLE_KEY` | server-only, cron ingest |

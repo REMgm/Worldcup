@@ -9,6 +9,7 @@ import type {
   Stage,
   Team,
 } from "@/lib/types";
+import { impliedProbabilities } from "@/lib/odds";
 import { TEAM_COLORS } from "@/lib/teamColors";
 import type { FootballProvider } from "./types";
 
@@ -62,20 +63,6 @@ function mapEvents(raw: any[] | undefined): FixtureEvent[] | null {
     player: e?.player?.name ?? null,
     assist: e?.assist?.name ?? null,
   }));
-}
-
-/** Decimal odds → implied probabilities with the overround stripped. */
-export function impliedProbabilities(odds: Record<string, number>): Record<string, number> {
-  const inverted = Object.fromEntries(
-    Object.entries(odds)
-      .filter(([, v]) => typeof v === "number" && v > 1)
-      .map(([k, v]) => [k, 1 / v]),
-  );
-  const total = Object.values(inverted).reduce((a, b) => a + b, 0);
-  if (total <= 0) return {};
-  return Object.fromEntries(
-    Object.entries(inverted).map(([k, v]) => [k, Number((v / total).toFixed(4))]),
-  );
 }
 
 export interface ApiFootballConfig {
