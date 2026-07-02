@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useAnimation } from "framer-motion";
+import { motion } from "framer-motion";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { fireConfetti } from "@/lib/confetti";
@@ -26,7 +26,6 @@ export default function LiveTicker() {
   const [data, setData] = useState<LivePayload | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const scores = useRef(new Map<number, number>());
-  const controls = useAnimation();
 
   const fetchLive = useCallback(async () => {
     try {
@@ -88,7 +87,6 @@ export default function LiveTicker() {
       dragConstraints={{ top: 0, bottom: 0 }}
       dragElastic={{ top: 0, bottom: 0.4 }}
       onDragEnd={(_, info) => pullRefresh(info.offset.y)}
-      animate={controls}
     >
       <div className="mb-2 flex items-center justify-between">
         <span className="data-nums text-[10px] font-semibold tracking-[0.24em] text-flood-dim">
