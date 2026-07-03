@@ -19,6 +19,13 @@
   --font-data: "JetBrains Mono Variable", ui-monospace, monospace;
 }
 
+html,
+body {
+  /* Full-bleed sections and the fixed ticker must never widen the page —
+     no sideways panning on mobile. */
+  overflow-x: clip;
+}
+
 body {
   background: var(--color-pitch-900);
   color: var(--color-flood);

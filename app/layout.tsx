@@ -41,19 +41,19 @@ export default function RootLayout({
     <html lang="en" className="bg-pitch-900">
       <body className="min-h-dvh antialiased">
         <header className="sticky top-0 z-50 glass-overlay border-x-0 border-t-0">
-          <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
+          <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-2 px-3 sm:px-4">
             <Link
               href="/"
-              className="font-display text-lg font-black tracking-tight text-flood"
+              className="shrink-0 font-display text-base font-black tracking-tight text-flood sm:text-lg"
             >
               WORLDCUP<span className="text-lime">PULSE</span>
             </Link>
-            <nav className="flex items-center gap-1">
+            <nav className="flex shrink-0 items-center sm:gap-1">
               {NAV.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="flex min-h-11 items-center rounded-full px-4 text-sm font-medium text-flood-dim transition-colors hover:bg-pitch-700 hover:text-flood"
+                  className="flex min-h-11 items-center rounded-full px-2.5 text-[13px] font-medium text-flood-dim transition-colors hover:bg-pitch-700 hover:text-flood sm:px-4 sm:text-sm"
                 >
                   {item.label}
                 </Link>

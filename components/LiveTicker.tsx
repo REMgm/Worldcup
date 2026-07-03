@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { fireConfetti } from "@/lib/confetti";
 import { kickoffTime } from "@/lib/format";
@@ -24,6 +25,7 @@ const POLL_MS = 30_000;
  * visual refetch.
  */
 export default function LiveTicker() {
+  const router = useRouter();
   const [data, setData] = useState<LivePayload | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const scores = useRef(new Map<number, number>());
@@ -65,14 +67,19 @@ export default function LiveTicker() {
     return () => clearInterval(timer);
   }, [fetchLive]);
 
+  const refresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchLive();
+    router.refresh(); // re-render server components so match cards update too
+    setTimeout(() => setRefreshing(false), 600);
+  }, [fetchLive, router]);
+
   const pullRefresh = useCallback(
     async (offsetY: number) => {
       if (offsetY < 44) return;
-      setRefreshing(true);
-      await fetchLive(); // data is already cached server-side — this is a visual affordance (§9)
-      setTimeout(() => setRefreshing(false), 500);
+      await refresh(); // pull-down = same affordance as the button (§9)
     },
-    [fetchLive],
+    [refresh],
   );
 
   const live = data?.live ?? [];
@@ -89,13 +96,32 @@ export default function LiveTicker() {
       dragElastic={{ top: 0, bottom: 0.4 }}
       onDragEnd={(_, info) => pullRefresh(info.offset.y)}
     >
-      <div className="mb-2 flex items-center justify-between">
+      <div className="mb-1 flex items-center justify-between">
         <span className="data-nums text-[10px] font-semibold tracking-[0.24em] text-flood-dim">
           {live.length ? "LIVE NOW" : "NEXT UP"}
+          {refreshing && <span className="ml-2 text-lime">syncing…</span>}
         </span>
-        {refreshing && (
-          <span className="data-nums text-[10px] text-lime">syncing…</span>
-        )}
+        <button
+          type="button"
+          onClick={refresh}
+          disabled={refreshing}
+          aria-label="Refresh scores"
+          className="flex size-11 items-center justify-center rounded-full text-flood-dim transition-colors hover:bg-pitch-700 hover:text-flood disabled:opacity-60"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={`size-4 ${refreshing ? "animate-spin motion-reduce:animate-none" : ""}`}
+            aria-hidden
+          >
+            <path d="M21 12a9 9 0 1 1-2.64-6.36" />
+            <path d="M21 3v6h-6" />
+          </svg>
+        </button>
       </div>
       <div className="flex gap-2 overflow-x-auto pb-1">
         {live.map((f) => (

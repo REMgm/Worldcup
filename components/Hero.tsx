@@ -25,7 +25,7 @@ export default function Hero() {
   return (
     <section
       ref={ref}
-      className="relative -mx-4 mb-12 flex min-h-[66vh] items-end overflow-hidden md:rounded-b-3xl"
+      className="relative -mx-4 mb-8 flex items-end overflow-hidden md:mb-12 md:min-h-[66vh] md:rounded-b-3xl"
     >
       {/* --- photoreal atmosphere placeholder stack --- */}
       <motion.div aria-hidden style={{ y: bgY }} className="absolute inset-0">
@@ -45,30 +45,31 @@ export default function Hero() {
         <div className="absolute left-[43%] top-[12%] size-1 rounded-full bg-lime/50 blur-[1px]" />
       </motion.div>
 
-      {/* --- content --- */}
-      <div className="relative z-10 w-full px-4 pb-10 pt-32 md:px-8">
-        <p className="data-nums mb-3 text-[11px] font-semibold tracking-[0.3em] text-lime">
+      {/* --- content — compact on mobile so the live match card sits in the
+             first viewport (squeezed top), full-bleed cinematic on desktop --- */}
+      <div className="relative z-10 w-full px-4 pb-5 pt-8 md:px-8 md:pb-10 md:pt-32">
+        <p className="data-nums mb-2 text-[11px] font-semibold tracking-[0.3em] text-lime md:mb-3">
           KNOCKOUT STAGE · LIVE
         </p>
-        <h1 className="font-display text-[13vw] font-black leading-[0.9] tracking-tight text-flood md:text-8xl">
+        <h1 className="font-display text-4xl font-black leading-[0.92] tracking-tight text-flood md:text-8xl">
           THE BRACKET
           <br />
           <span className="text-lime">IS THE PRODUCT.</span>
         </h1>
-        <p className="mt-4 max-w-md text-sm text-flood-dim md:text-base">
+        <p className="mt-3 hidden max-w-md text-sm text-flood-dim sm:block md:text-base">
           Thirty-two teams walked in. One walks out. Live scores, market moves
           and takes with the receipts attached.
         </p>
-        <div className="mt-6 flex flex-wrap gap-3">
+        <div className="mt-4 flex flex-wrap gap-2.5 md:mt-6 md:gap-3">
           <Link
             href="/bracket"
-            className="rounded-full bg-lime px-6 py-3 text-sm font-bold text-pitch-900 transition-transform hover:scale-[1.03]"
+            className="flex min-h-11 items-center rounded-full bg-lime px-5 text-sm font-bold text-pitch-900 transition-transform hover:scale-[1.03] md:px-6"
           >
             Open the bracket
           </Link>
           <Link
             href="#today"
-            className="rounded-full border border-flood/20 px-6 py-3 text-sm font-semibold text-flood transition-colors hover:bg-pitch-700"
+            className="flex min-h-11 items-center rounded-full border border-flood/20 px-5 text-sm font-semibold text-flood transition-colors hover:bg-pitch-700 md:px-6"
           >
             Today&apos;s matches
           </Link>
@@ -77,7 +78,7 @@ export default function Hero() {
         {/* tournament pulse line */}
         <svg
           viewBox="0 0 600 40"
-          className="mt-10 h-8 w-full max-w-2xl overflow-visible"
+          className="mt-5 h-5 w-full max-w-2xl md:mt-10 md:h-8"
           fill="none"
           aria-hidden
         >
