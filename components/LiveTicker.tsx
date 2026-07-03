@@ -90,23 +90,58 @@ export default function LiveTicker() {
   return (
     <motion.aside
       aria-label="Live scores"
-      className="glass-overlay fixed inset-x-0 bottom-0 z-40 px-4 pb-[max(env(safe-area-inset-bottom),0.75rem)] pt-3 md:inset-x-auto md:bottom-4 md:right-4 md:w-96 md:rounded-2xl"
+      className="glass-overlay fixed inset-x-0 bottom-0 z-40 px-3 pb-[max(env(safe-area-inset-bottom),0.375rem)] pt-1.5 md:inset-x-auto md:bottom-4 md:right-4 md:w-96 md:rounded-2xl"
       drag="y"
       dragConstraints={{ top: 0, bottom: 0 }}
       dragElastic={{ top: 0, bottom: 0.4 }}
       onDragEnd={(_, info) => pullRefresh(info.offset.y)}
     >
-      <div className="mb-1 flex items-center justify-between">
-        <span className="data-nums text-[10px] font-semibold tracking-[0.24em] text-flood-dim">
-          {live.length ? "LIVE NOW" : "NEXT UP"}
-          {refreshing && <span className="ml-2 text-lime">syncing…</span>}
+      {/* one compact row: label left, score centered, refresh right */}
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+        <span
+          className={`data-nums justify-self-start text-[10px] font-bold tracking-[0.2em] ${
+            refreshing ? "text-lime" : live.length ? "text-live" : "text-flood-dim"
+          }`}
+        >
+          {refreshing ? "SYNCING…" : live.length ? "LIVE NOW" : "NEXT UP"}
         </span>
+        <div className="flex max-w-[60vw] justify-center gap-2 overflow-x-auto md:max-w-56">
+          {live.map((f) => (
+            <Link
+              key={f.id}
+              href={`/match/${f.id}`}
+              className="flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-2"
+            >
+              <span className="live-dot inline-block size-2 rounded-full bg-live" />
+              <span className="data-nums text-sm font-bold text-flood">
+                {f.home?.code ?? "?"} {f.home_score ?? 0}–{f.away_score ?? 0}{" "}
+                {f.away?.code ?? "?"}
+              </span>
+              <span className="data-nums text-xs text-lime">
+                {f.status === "HT" ? "HT" : `${f.elapsed ?? "—"}'`}
+              </span>
+            </Link>
+          ))}
+          {!live.length && nextUp && (
+            <Link
+              href={`/match/${nextUp.id}`}
+              className="flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-2"
+            >
+              <span className="data-nums text-sm font-bold text-flood">
+                {nextUp.home?.code ?? "TBD"} v {nextUp.away?.code ?? "TBD"}
+              </span>
+              <span className="data-nums text-xs text-flood-dim">
+                {kickoffTime(nextUp.kickoff)}
+              </span>
+            </Link>
+          )}
+        </div>
         <button
           type="button"
           onClick={refresh}
           disabled={refreshing}
           aria-label="Refresh scores"
-          className="flex size-11 items-center justify-center rounded-full text-flood-dim transition-colors hover:bg-pitch-700 hover:text-flood disabled:opacity-60"
+          className="flex size-11 items-center justify-center justify-self-end rounded-full text-flood-dim transition-colors hover:bg-pitch-700 hover:text-flood disabled:opacity-60"
         >
           <svg
             viewBox="0 0 24 24"
@@ -122,37 +157,6 @@ export default function LiveTicker() {
             <path d="M21 3v6h-6" />
           </svg>
         </button>
-      </div>
-      <div className="flex gap-2 overflow-x-auto pb-1">
-        {live.map((f) => (
-          <Link
-            key={f.id}
-            href={`/match/${f.id}`}
-            className="flex min-h-11 shrink-0 items-center gap-2 rounded-xl bg-pitch-800/80 px-3 py-2"
-          >
-            <span className="live-dot inline-block size-2 rounded-full bg-lime" />
-            <span className="data-nums text-sm font-bold text-flood">
-              {f.home?.code ?? "?"} {f.home_score ?? 0}–{f.away_score ?? 0}{" "}
-              {f.away?.code ?? "?"}
-            </span>
-            <span className="data-nums text-xs text-lime">
-              {f.status === "HT" ? "HT" : `${f.elapsed ?? "—"}'`}
-            </span>
-          </Link>
-        ))}
-        {!live.length && nextUp && (
-          <Link
-            href={`/match/${nextUp.id}`}
-            className="flex min-h-11 shrink-0 items-center gap-2 rounded-xl bg-pitch-800/80 px-3 py-2"
-          >
-            <span className="data-nums text-sm font-bold text-flood">
-              {nextUp.home?.code ?? "TBD"} v {nextUp.away?.code ?? "TBD"}
-            </span>
-            <span className="data-nums text-xs text-flood-dim">
-              {kickoffTime(nextUp.kickoff)}
-            </span>
-          </Link>
-        )}
       </div>
     </motion.aside>
   );

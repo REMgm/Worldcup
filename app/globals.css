@@ -13,6 +13,7 @@
   --color-flood: #f5f2e8; /* warm floodlight white */
   --color-flood-dim: #b9b7ac;
   --color-ember: #ff6b4a; /* spicy takes only */
+  --color-live: #ff3b3b; /* broadcast-red live indicator */
 
   --font-display: "Archivo Variable", "Arial Narrow", sans-serif;
   --font-body: "Inter Variable", system-ui, sans-serif;
