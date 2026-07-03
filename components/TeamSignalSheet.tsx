@@ -4,8 +4,53 @@ import { motion } from "framer-motion";
 import Flag from "@/components/Flag";
 import { statSlide, statStagger, useCountUp } from "@/lib/motion";
 import { SIGNAL_LIME } from "@/lib/teamColors";
-import type { TeamTournamentStats } from "@/lib/teamStats";
-import type { Team } from "@/lib/types";
+import type { JourneyEntry, TeamTournamentStats } from "@/lib/teamStats";
+import type { Stage, Team } from "@/lib/types";
+
+const STAGE_SHORT: Record<Stage, string> = {
+  GRP: "GRP",
+  R32: "R32",
+  R16: "R16",
+  QF: "QF",
+  SF: "SF",
+  "3P": "3P",
+  F: "F",
+};
+
+const OUTCOME_STYLE: Record<JourneyEntry["outcome"], string> = {
+  W: "border-lime/50 text-lime",
+  D: "border-flood/30 text-flood-dim",
+  L: "border-ember/50 text-ember",
+};
+
+/** The context trail: every game played so far, in order. */
+function Journey({ journey }: { journey: JourneyEntry[] }) {
+  if (!journey.length) return null;
+  return (
+    <div className="mb-3">
+      <div className="mb-1.5 text-[10px] font-medium uppercase tracking-[0.12em] text-flood-dim">
+        Tournament so far
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        {journey.map((j, i) => (
+          <motion.span
+            key={i}
+            variants={statSlide}
+            className={`data-nums inline-flex items-center gap-1 rounded-md border px-1.5 py-1 text-[10px] font-bold ${OUTCOME_STYLE[j.outcome]}`}
+            title={`${STAGE_SHORT[j.stage]}: ${j.gf}–${j.ga}${j.pens ? " on pens" : ""} v ${j.opponentName ?? "?"}`}
+          >
+            <span>{j.outcome}</span>
+            <span className="font-medium opacity-80">
+              {j.gf}–{j.ga}
+              {j.pens ? "p" : ""}
+            </span>
+            <span className="opacity-70">{j.opponentCode ?? "?"}</span>
+          </motion.span>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function CountStat({
   label,
@@ -83,12 +128,21 @@ function TeamColumn({
       initial="hidden"
       whileInView="show"
       viewport={{ once: true, amount: 0.2 }}
-      className="rounded-2xl border bg-pitch-800 p-4"
+      className="relative overflow-hidden rounded-2xl border bg-pitch-800 p-4"
       style={{
         borderColor: favored ? accent : "rgba(245,242,232,0.06)",
         boxShadow: favored ? `0 0 32px -14px ${accent}` : undefined,
       }}
     >
+      {/* WC26-style geometric corner motif in the team's color */}
+      <svg
+        aria-hidden
+        viewBox="0 0 120 120"
+        className="pointer-events-none absolute -right-6 -top-6 size-28 opacity-[0.12]"
+      >
+        <path d="M0 60 A60 60 0 0 1 60 0 H120 V60 Z" fill={accent} />
+        <circle cx="90" cy="90" r="30" fill={accent} />
+      </svg>
       <div className="mb-3 flex items-center gap-2.5">
         <Flag team={team} size={30} />
         <div className="min-w-0">
@@ -106,6 +160,7 @@ function TeamColumn({
           </span>
         )}
       </div>
+      <Journey journey={stats.journey} />
       <div className="grid grid-cols-2 gap-2">
         <CountStat label="Goals" value={stats.goalsFor} accent={accent} />
         <CountStat label="Conceded" value={stats.goalsAgainst} />

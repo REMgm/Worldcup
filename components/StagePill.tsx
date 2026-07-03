@@ -1,6 +1,7 @@
 import type { Stage } from "@/lib/types";
 
 const LABELS: Record<Stage, string> = {
+  GRP: "GROUP STAGE",
   R32: "ROUND OF 32",
   R16: "ROUND OF 16",
   QF: "QUARTER-FINAL",

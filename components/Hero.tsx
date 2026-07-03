@@ -35,6 +35,17 @@ export default function Hero() {
         <div className="absolute -top-24 right-[12%] h-96 w-40 -rotate-[18deg] bg-[radial-gradient(closest-side,rgba(245,242,232,0.12),transparent)] blur-2xl" />
         {/* wet-pitch reflection */}
         <div className="absolute bottom-0 h-40 w-full bg-[linear-gradient(180deg,transparent,rgba(200,245,66,0.05))]" />
+        {/* WC26 geometric shape-language (kit palette, marks-free) */}
+        <svg
+          aria-hidden
+          viewBox="0 0 240 240"
+          className="absolute -right-10 top-10 size-52 opacity-[0.14] md:right-6 md:size-72"
+        >
+          <path d="M0 120 A120 120 0 0 1 120 0 H240 V120 Z" fill="#6C2BD9" />
+          <path d="M0 120 H120 V240 A120 120 0 0 1 0 120 Z" fill="#52F5C3" />
+          <path d="M120 120 H240 V240 A120 120 0 0 0 120 120 Z" fill="#FF2D1A" />
+          <circle cx="180" cy="60" r="34" fill="#2653F1" />
+        </svg>
       </motion.div>
       {/* crowd bokeh */}
       <motion.div aria-hidden style={{ y: hazeY }} className="absolute inset-0 opacity-40">

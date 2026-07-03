@@ -43,6 +43,7 @@ const STATUS_MAP: Record<string, FixtureStatus> = {
 
 function mapStage(round: string | null | undefined): Stage | null {
   const r = (round ?? "").toLowerCase();
+  if (r.includes("group") || r.includes("matchday")) return "GRP";
   if (r.includes("round of 32")) return "R32";
   if (r.includes("round of 16")) return "R16";
   if (r.includes("quarter")) return "QF";

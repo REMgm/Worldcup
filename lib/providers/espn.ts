@@ -19,9 +19,9 @@ const CORE = "https://sports.core.api.espn.com/v2/sports/soccer/leagues/fifa.wor
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 // 2026 calendar fallback for stage classification when the feed carries no
-// round note. Group stage Jun 11–27, R32 Jun 28–Jul 3, R16 Jul 4–8,
-// QF Jul 9–13, SF Jul 14–17, third place Jul 18, final Jul 19 (UTC dates).
+// round note (UTC dates; the per-event round slug is authoritative).
 const STAGE_WINDOWS: Array<[string, string, Stage]> = [
+  ["2026-06-11", "2026-06-27", "GRP"],
   ["2026-06-28", "2026-07-03", "R32"],
   ["2026-07-04", "2026-07-08", "R16"],
   ["2026-07-09", "2026-07-13", "QF"],
@@ -33,7 +33,7 @@ const STAGE_WINDOWS: Array<[string, string, Stage]> = [
 function stageFromText(text: string): Stage | null {
   // ESPN's per-event round lives in season.slug, hyphenated ("round-of-32").
   const r = text.toLowerCase().replace(/[-_]/g, " ");
-  if (r.includes("group") || r.includes("matchday")) return null; // explicit group stage
+  if (r.includes("group") || r.includes("matchday")) return "GRP"; // cached for context, hidden from the bracket
   if (r.includes("round of 32")) return "R32";
   if (r.includes("round of 16")) return "R16";
   if (r.includes("quarter")) return "QF";
@@ -171,10 +171,8 @@ export class EspnProvider implements FootballProvider {
     ]
       .filter(Boolean)
       .join(" ");
-    const norm = noteText.toLowerCase().replace(/[-_]/g, " ");
-    if (norm.includes("group") || norm.includes("matchday")) return null; // explicit group stage — never date-classify
     const stage = stageFromText(noteText) ?? stageFromDate(String(event.date ?? ""));
-    if (!stage) return null; // group stage / unknown — knockout product only
+    if (!stage) return null; // outside the tournament window
 
     const competitors: any[] = comp?.competitors ?? [];
     const home = competitors.find((c) => c?.homeAway === "home") ?? competitors[0];

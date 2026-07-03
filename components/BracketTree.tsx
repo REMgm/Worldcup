@@ -9,6 +9,7 @@ import type { FixtureWithTeams, Stage, Team } from "@/lib/types";
 
 const STAGE_ORDER: Stage[] = ["R32", "R16", "QF", "SF", "F"];
 const STAGE_LABEL: Record<Stage, string> = {
+  GRP: "Group stage",
   R32: "Round of 32",
   R16: "Round of 16",
   QF: "Quarter-finals",

@@ -15,6 +15,7 @@ import {
   getOddsForFixture,
   getPredictions,
 } from "@/lib/data";
+import { hostCity, textOnCity } from "@/lib/cities";
 import { kickoffDate, kickoffTime } from "@/lib/format";
 import { SIGNAL_LIME } from "@/lib/teamColors";
 import { teamTournamentStats } from "@/lib/teamStats";
@@ -94,6 +95,17 @@ export default async function MatchPage({ params }: Props) {
           {kickoffDate(fixture.kickoff)} · {kickoffTime(fixture.kickoff)}
           {fixture.venue ? ` · ${fixture.venue}` : ""}
         </span>
+        {(() => {
+          const city = hostCity(fixture.venue);
+          return city ? (
+            <span
+              className="data-nums rounded-md px-2 py-1 text-[10px] font-bold tracking-[0.1em]"
+              style={{ background: city.color, color: textOnCity(city.color) }}
+            >
+              {city.name} 26
+            </span>
+          ) : null;
+        })()}
         <span className="ml-auto">
           <ShareButton
             title="Worldcup Signalroom"

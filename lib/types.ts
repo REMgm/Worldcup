@@ -1,7 +1,7 @@
 // Shared domain types. Mirrors the Supabase schema (§5 of the build spec)
 // and the provider interface (§3).
 
-export type Stage = "R32" | "R16" | "QF" | "SF" | "3P" | "F";
+export type Stage = "GRP" | "R32" | "R16" | "QF" | "SF" | "3P" | "F";
 
 export type FixtureStatus = "NS" | "LIVE" | "HT" | "FT" | "PEN";
 

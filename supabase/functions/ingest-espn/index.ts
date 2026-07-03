@@ -33,6 +33,7 @@ const TEAM_COLORS: Record<string, { p: string; s: string }> = {
 };
 
 const STAGE_WINDOWS: Array<[string, string, string]> = [
+  ["2026-06-11", "2026-06-27", "GRP"],
   ["2026-06-28", "2026-07-03", "R32"],
   ["2026-07-04", "2026-07-08", "R16"],
   ["2026-07-09", "2026-07-13", "QF"],
@@ -44,7 +45,7 @@ const STAGE_WINDOWS: Array<[string, string, string]> = [
 function stageFor(noteText: string, iso: string): string | null {
   // ESPN's per-event round lives in season.slug, hyphenated ("round-of-32").
   const r = noteText.toLowerCase().replace(/[-_]/g, " ");
-  if (r.includes("group") || r.includes("matchday")) return null; // explicit group stage
+  if (r.includes("group") || r.includes("matchday")) return "GRP"; // cached for stats context, hidden from the bracket
   if (r.includes("round of 32")) return "R32";
   if (r.includes("round of 16")) return "R16";
   if (r.includes("quarter")) return "QF";
