@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { fireConfetti } from "@/lib/confetti";
+import { kickoffTime } from "@/lib/format";
 import { buzz } from "@/lib/haptics";
 import { SIGNAL_LIME } from "@/lib/teamColors";
 import type { FixtureWithTeams } from "@/lib/types";
@@ -122,10 +123,7 @@ export default function LiveTicker() {
               {nextUp.home?.code ?? "TBD"} v {nextUp.away?.code ?? "TBD"}
             </span>
             <span className="data-nums text-xs text-flood-dim">
-              {new Date(nextUp.kickoff).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
+              {kickoffTime(nextUp.kickoff)}
             </span>
           </Link>
         )}

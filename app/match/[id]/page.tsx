@@ -7,7 +7,7 @@ import OddsShift from "@/components/OddsShift";
 import PredictionMeter from "@/components/PredictionMeter";
 import StagePill from "@/components/StagePill";
 import { getFixtureById, getHotTakes, getOddsForFixture } from "@/lib/data";
-import { kickoffDateUTC, kickoffTimeUTC } from "@/lib/format";
+import { kickoffDate, kickoffTime } from "@/lib/format";
 import { SIGNAL_LIME } from "@/lib/teamColors";
 
 export const revalidate = 60;
@@ -66,7 +66,7 @@ export default async function MatchPage({ params }: Props) {
       <div className="mb-6 flex flex-wrap items-center gap-3">
         <StagePill stage={fixture.stage} />
         <span className="data-nums text-xs text-flood-dim">
-          {kickoffDateUTC(fixture.kickoff)} · {kickoffTimeUTC(fixture.kickoff)}
+          {kickoffDate(fixture.kickoff)} · {kickoffTime(fixture.kickoff)}
           {fixture.venue ? ` · ${fixture.venue}` : ""}
         </span>
       </div>

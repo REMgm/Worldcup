@@ -2,7 +2,7 @@ import Link from "next/link";
 import Flag from "@/components/Flag";
 import MomentumEdge from "@/components/MomentumEdge";
 import StagePill from "@/components/StagePill";
-import { kickoffDateUTC, kickoffTimeUTC } from "@/lib/format";
+import { kickoffDate, kickoffTime } from "@/lib/format";
 import { momentumScore } from "@/lib/momentum";
 import { SIGNAL_LIME } from "@/lib/teamColors";
 import type { FixtureWithTeams, Team } from "@/lib/types";
@@ -41,7 +41,7 @@ function StatusBlock({ fixture }: { fixture: FixtureWithTeams }) {
   }
   return (
     <span className="data-nums text-xs text-flood-dim">
-      {kickoffDateUTC(fixture.kickoff)} · {kickoffTimeUTC(fixture.kickoff)}
+      {kickoffDate(fixture.kickoff)} · {kickoffTime(fixture.kickoff)}
     </span>
   );
 }
