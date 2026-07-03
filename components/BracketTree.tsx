@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { usePrefersReducedMotion } from "@/lib/motion";
+import type { WinChance } from "@/lib/predictor";
 import type { FixtureWithTeams, Stage, Team } from "@/lib/types";
 
 const STAGE_ORDER: Stage[] = ["R32", "R16", "QF", "SF", "F"];
@@ -37,12 +38,15 @@ function TeamRow({
   pens,
   winner,
   live,
+  chance,
 }: {
   team: Team | null;
   score: number | null;
   pens?: number | null;
   winner: boolean;
   live: boolean;
+  /** Signalroom win chance (0–1), shown while the tie is undecided. */
+  chance?: number;
 }) {
   return (
     <div className="flex items-center justify-between gap-2 px-3 py-1.5">
@@ -54,7 +58,7 @@ function TeamRow({
       <span
         className={`data-nums text-xs font-bold ${winner ? "text-lime" : live ? "text-lime" : "text-flood-dim"}`}
       >
-        {score ?? ""}
+        {score ?? (chance != null ? `${Math.round(chance * 100)}%` : "")}
         {pens != null ? ` (${pens})` : ""}
       </span>
     </div>
@@ -65,10 +69,12 @@ function BracketNode({
   fixture,
   style,
   className = "",
+  chance = null,
 }: {
   fixture: FixtureWithTeams;
   style?: React.CSSProperties;
   className?: string;
+  chance?: WinChance | null;
 }) {
   const winner = winnerOf(fixture);
   const live = fixture.status === "LIVE" || fixture.status === "HT";
@@ -87,6 +93,7 @@ function BracketNode({
         pens={fixture.penalties?.home}
         winner={winner != null && winner.id === fixture.home?.id}
         live={live}
+        chance={played ? undefined : chance?.home}
       />
       <div className="mx-3 border-t border-flood/5" />
       <TeamRow
@@ -95,6 +102,7 @@ function BracketNode({
         pens={fixture.penalties?.away}
         winner={winner != null && winner.id === fixture.away?.id}
         live={live}
+        chance={played ? undefined : chance?.away}
       />
       {live && (
         <span className="absolute right-2 top-2 flex items-center gap-1">
@@ -110,7 +118,14 @@ function BracketNode({
  * bracket scrolls into view, winners' paths in team color. Mobile collapses
  * to horizontal snap-scroll columns with stage tabs (§9).
  */
-export default function BracketTree({ fixtures }: { fixtures: FixtureWithTeams[] }) {
+export default function BracketTree({
+  fixtures,
+  predictions,
+}: {
+  fixtures: FixtureWithTeams[];
+  /** Signalroom win chances by fixture id (undecided ties only). */
+  predictions?: Record<number, WinChance>;
+}) {
   const reduced = usePrefersReducedMotion();
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -207,7 +222,7 @@ export default function BracketTree({ fixtures }: { fixtures: FixtureWithTeams[]
               <div className="relative space-y-3">
                 {byStage.get(s)!.map((f) => (
                   <div key={f.id} className="relative">
-                    <BracketNode fixture={f} />
+                    <BracketNode fixture={f} chance={predictions?.[f.id] ?? null} />
                   </div>
                 ))}
               </div>
@@ -272,7 +287,7 @@ export default function BracketTree({ fixtures }: { fixtures: FixtureWithTeams[]
                     height: NODE_H,
                   }}
                 >
-                  <BracketNode fixture={f} className="relative h-full" />
+                  <BracketNode fixture={f} className="relative h-full" chance={predictions?.[f.id] ?? null} />
                 </div>
               ))}
             </div>

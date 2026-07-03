@@ -8,6 +8,7 @@ import {
   getHotTakes,
   getLiveSnapshot,
   getOddsDeltas,
+  getPredictions,
   isDemoData,
 } from "@/lib/data";
 import { SIGNAL_LIME } from "@/lib/teamColors";
@@ -29,7 +30,10 @@ export default async function Home() {
     .slice(0, 4);
   const slate = [...live, ...today.filter((f) => !live.some((l) => l.id === f.id))].slice(0, 6);
   const cards = slate.length ? slate : upcoming;
-  const oddsDeltas = await getOddsDeltas(cards.map((f) => f.id));
+  const [oddsDeltas, predictions] = await Promise.all([
+    getOddsDeltas(cards.map((f) => f.id)),
+    getPredictions(),
+  ]);
   const takesById = new Map(fixtures.map((f) => [f.id, f]));
 
   return (
@@ -39,23 +43,28 @@ export default async function Home() {
       <section id="today" className="mb-14 scroll-mt-20">
         <div className="mb-5 flex items-baseline justify-between">
           <h2 className="font-display text-2xl font-black text-flood">
-            {slate.length ? "Today's slate" : "Up next"}
+            {slate.length ? "Today's Matches" : "Up next"}
           </h2>
           <Link href="/bracket" className="text-sm font-medium text-lime hover:underline">
-            Full bracket →
+            The Knockout →
           </Link>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           {cards.map((f) => (
-            <MatchCard key={f.id} fixture={f} oddsDelta={oddsDeltas.get(f.id) ?? 0} />
+            <MatchCard
+              key={f.id}
+              fixture={f}
+              oddsDelta={oddsDeltas.get(f.id) ?? 0}
+              chance={predictions.get(f.id) ?? null}
+            />
           ))}
         </div>
       </section>
 
       <section className="mb-14">
-        <h2 className="mb-1 font-display text-2xl font-black text-flood">The takes</h2>
+        <h2 className="mb-1 font-display text-2xl font-black text-flood">The Signals</h2>
         <p className="mb-5 text-sm text-flood-dim">
-          Every take ships with the stat that justifies it. Tap to see the receipts.
+          Every signal ships with the stat that justifies it. Tap to see the receipts.
         </p>
         <div className="grid gap-4 md:grid-cols-3">
           {takes.slice(0, 3).map((take) => {
@@ -81,7 +90,10 @@ export default async function Home() {
             Open →
           </Link>
         </div>
-        <BracketTree fixtures={fixtures.filter((f) => f.stage !== "R32")} />
+        <BracketTree
+          fixtures={fixtures.filter((f) => f.stage !== "R32")}
+          predictions={Object.fromEntries(predictions)}
+        />
       </section>
 
       {demo && (

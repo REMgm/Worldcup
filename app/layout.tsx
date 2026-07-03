@@ -12,14 +12,14 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "Worldcup Pulse — the knockout bracket, live",
-    template: "%s · Worldcup Pulse",
+    default: "Worldcup Signalroom — winning the knockouts",
+    template: "%s · Worldcup Signalroom",
   },
   description:
-    "Live knockout bracket, match momentum, player form and prediction reveals. Editorial takes, not tips.",
+    "Live knockout bracket, win-chance signals, match momentum and player form. Editorial signals, not tips.",
   openGraph: {
-    title: "Worldcup Pulse",
-    description: "The knockout bracket is the product. Takes, not tips.",
+    title: "Worldcup Signalroom",
+    description: "Winning the knockouts. Signals, not tips.",
     type: "website",
   },
 };
@@ -46,7 +46,9 @@ export default function RootLayout({
               href="/"
               className="shrink-0 font-display text-base font-black tracking-tight text-flood sm:text-lg"
             >
-              WORLDCUP<span className="text-lime">PULSE</span>
+              <span className="hidden sm:inline">WORLDCUP</span>
+              <span className="sm:hidden">WC</span>
+              <span className="text-lime">SIGNALROOM</span>
             </Link>
             <nav className="flex shrink-0 items-center sm:gap-1">
               {NAV.map((item) => (

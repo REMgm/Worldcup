@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { demoFixtures, demoOdds, demoPlayers, demoTeams } from "@/lib/demo";
+import { eloRatings, predictFixture, type WinChance } from "@/lib/predictor";
 import { supabaseAnon } from "@/lib/supabase";
 import { generateTakes } from "@/lib/takesEngine";
 import type {
@@ -227,6 +228,42 @@ export async function getHotTakes(fixtureId?: number): Promise<HotTake[]> {
     .map((t, i) => ({ id: i + 1, created_at: new Date(now).toISOString(), ...t }))
     .filter((t) => fixtureId == null || t.fixture_id === fixtureId);
 }
+
+/**
+ * Signalroom win chances for undecided fixtures with both teams known —
+ * the compounding loop's output. Elo learned from every cached result,
+ * anchored to the latest market snapshot where one exists.
+ */
+export async function getPredictions(
+  fixtureIds?: number[],
+): Promise<Map<number, WinChance>> {
+  const real = await fetchSupabaseFixtures();
+  const fixtures = real ?? demoFixtures();
+  const ratings = eloRatings(fixtures);
+  const targets = fixtures.filter(
+    (f) =>
+      f.status !== "FT" &&
+      f.status !== "PEN" &&
+      f.home_team != null &&
+      f.away_team != null &&
+      (!fixtureIds || fixtureIds.includes(f.id)),
+  );
+  const oddsByFixture = await fetchOddsForFixtures(
+    targets.map((f) => f.id),
+    real !== null,
+  );
+  const predictions = new Map<number, WinChance>();
+  for (const f of targets) {
+    const mw = (oddsByFixture.get(f.id) ?? []).filter(
+      (r) => r.market === "match_winner",
+    );
+    const chance = predictFixture(f, ratings, mw[mw.length - 1] ?? null);
+    if (chance) predictions.set(f.id, chance);
+  }
+  return predictions;
+}
+
+export type { WinChance };
 
 export async function getTeams(): Promise<Team[]> {
   const sb = supabaseAnon();

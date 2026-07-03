@@ -52,9 +52,9 @@ export default function Hero() {
           KNOCKOUT STAGE · LIVE
         </p>
         <h1 className="font-display text-4xl font-black leading-[0.92] tracking-tight text-flood md:text-8xl">
-          THE BRACKET
+          WINNING THE
           <br />
-          <span className="text-lime">IS THE PRODUCT.</span>
+          <span className="text-lime">KNOCKOUTS</span>
         </h1>
         <p className="mt-3 hidden max-w-md text-sm text-flood-dim sm:block md:text-base">
           Thirty-two teams walked in. One walks out. Live scores, market moves
@@ -65,13 +65,13 @@ export default function Hero() {
             href="/bracket"
             className="flex min-h-11 items-center rounded-full bg-lime px-5 text-sm font-bold text-pitch-900 transition-transform hover:scale-[1.03] md:px-6"
           >
-            Open the bracket
+            The Knockout
           </Link>
           <Link
             href="#today"
             className="flex min-h-11 items-center rounded-full border border-flood/20 px-5 text-sm font-semibold text-flood transition-colors hover:bg-pitch-700 md:px-6"
           >
-            Today&apos;s matches
+            Today&apos;s Matches
           </Link>
         </div>
 

@@ -4,10 +4,20 @@ import MomentumEdge from "@/components/MomentumEdge";
 import StagePill from "@/components/StagePill";
 import { kickoffDate, kickoffTime } from "@/lib/format";
 import { momentumScore } from "@/lib/momentum";
+import type { WinChance } from "@/lib/predictor";
 import { SIGNAL_LIME } from "@/lib/teamColors";
 import type { FixtureWithTeams, Team } from "@/lib/types";
 
-function TeamSide({ team, align }: { team: Team | null; align: "left" | "right" }) {
+function TeamSide({
+  team,
+  align,
+  chance,
+}: {
+  team: Team | null;
+  align: "left" | "right";
+  /** Signalroom win chance for this side (0–1), shown behind the team. */
+  chance?: number;
+}) {
   return (
     <div
       className={`flex min-w-0 items-center gap-2.5 ${align === "right" ? "flex-row-reverse text-right" : ""}`}
@@ -16,6 +26,14 @@ function TeamSide({ team, align }: { team: Team | null; align: "left" | "right" 
       <div className="min-w-0">
         <div className="data-nums text-sm font-bold tracking-wide text-flood">
           {team?.code ?? "TBD"}
+          {chance != null && (
+            <span
+              className="ml-1.5 text-[11px] font-bold text-lime"
+              title="Signalroom win chance"
+            >
+              {Math.round(chance * 100)}%
+            </span>
+          )}
         </div>
         <div className="truncate text-xs text-flood-dim">{team?.name ?? "To be decided"}</div>
       </div>
@@ -49,10 +67,13 @@ function StatusBlock({ fixture }: { fixture: FixtureWithTeams }) {
 export default function MatchCard({
   fixture,
   oddsDelta = 0,
+  chance = null,
 }: {
   fixture: FixtureWithTeams;
   /** Market movement toward the away side (§7 momentum term), from getOddsDeltas. */
   oddsDelta?: number;
+  /** Signalroom win chances from getPredictions (undecided fixtures only). */
+  chance?: WinChance | null;
 }) {
   const played = fixture.status !== "NS";
   const homeColor = fixture.home?.primary_color ?? SIGNAL_LIME;
@@ -77,7 +98,7 @@ export default function MatchCard({
         <StatusBlock fixture={fixture} />
       </div>
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-        <TeamSide team={fixture.home} align="left" />
+        <TeamSide team={fixture.home} align="left" chance={chance?.home} />
         <div className="px-1 text-center">
           {played ? (
             <>
@@ -94,7 +115,7 @@ export default function MatchCard({
             <div className="score-display text-xl text-flood-dim/60">vs</div>
           )}
         </div>
-        <TeamSide team={fixture.away} align="right" />
+        <TeamSide team={fixture.away} align="right" chance={chance?.away} />
       </div>
       {fixture.venue && (
         <div className="mt-3 truncate text-[11px] text-flood-dim/70">{fixture.venue}</div>

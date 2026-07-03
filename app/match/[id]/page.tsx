@@ -6,7 +6,7 @@ import HotTakeCard from "@/components/HotTakeCard";
 import OddsShift from "@/components/OddsShift";
 import PredictionMeter from "@/components/PredictionMeter";
 import StagePill from "@/components/StagePill";
-import { getFixtureById, getHotTakes, getOddsForFixture } from "@/lib/data";
+import { getFixtureById, getHotTakes, getOddsForFixture, getPredictions } from "@/lib/data";
 import { kickoffDate, kickoffTime } from "@/lib/format";
 import { SIGNAL_LIME } from "@/lib/teamColors";
 
@@ -35,28 +35,25 @@ export default async function MatchPage({ params }: Props) {
   const fixture = await getFixtureById(fixtureId);
   if (!fixture) notFound();
 
-  const [odds, takes] = await Promise.all([
+  const [odds, takes, predictions] = await Promise.all([
     getOddsForFixture(fixtureId),
     getHotTakes(fixtureId),
+    getPredictions([fixtureId]),
   ]);
 
-  const matchWinner = odds.filter((o) => o.market === "match_winner");
-  const latestOdds = matchWinner[matchWinner.length - 1];
   const played = fixture.status !== "NS";
   const live = fixture.status === "LIVE" || fixture.status === "HT";
+  const chance = predictions.get(fixtureId) ?? null;
 
-  // Market-implied chance to advance for the favored side: win prob plus
-  // half the draw (knockout ties resolve). Editorial context only (§3.4).
+  // Signalroom win chance for the favored side: Elo learned from every
+  // cached result, anchored to the market. Editorial context only (§3.4).
   let meter: { label: string; probability: number; color: string } | null = null;
-  if (latestOdds && fixture.home && fixture.away && !played) {
-    const draw = latestOdds.values.draw ?? 0;
-    const homeAdv = (latestOdds.values.home ?? 0) + draw / 2;
-    const awayAdv = (latestOdds.values.away ?? 0) + draw / 2;
-    const favHome = homeAdv >= awayAdv;
+  if (chance && fixture.home && fixture.away && !played) {
+    const favHome = chance.home >= chance.away;
     const fav = favHome ? fixture.home : fixture.away;
     meter = {
-      label: `Market-implied chance ${fav.name} advance`,
-      probability: favHome ? homeAdv : awayAdv,
+      label: `Signalroom win chance — ${fav.name}`,
+      probability: favHome ? chance.home : chance.away,
       color: fav.primary_color ?? SIGNAL_LIME,
     };
   }
@@ -80,6 +77,11 @@ export default async function MatchPage({ params }: Props) {
               {fixture.home?.name ?? "TBD"}
             </div>
             <div className="data-nums text-xs text-flood-dim">{fixture.home?.code ?? ""}</div>
+            {chance && !played && (
+              <div className="data-nums mt-1 text-lg font-bold text-lime" title="Signalroom win chance">
+                {Math.round(chance.home * 100)}%
+              </div>
+            )}
           </div>
         </div>
         <div className="text-center">
@@ -117,6 +119,11 @@ export default async function MatchPage({ params }: Props) {
               {fixture.away?.name ?? "TBD"}
             </div>
             <div className="data-nums text-xs text-flood-dim">{fixture.away?.code ?? ""}</div>
+            {chance && !played && (
+              <div className="data-nums mt-1 text-lg font-bold text-lime" title="Signalroom win chance">
+                {Math.round(chance.away * 100)}%
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -132,7 +139,7 @@ export default async function MatchPage({ params }: Props) {
 
           {takes.length > 0 && (
             <section>
-              <h2 className="mb-4 font-display text-xl font-black text-flood">The takes</h2>
+              <h2 className="mb-4 font-display text-xl font-black text-flood">The Signals</h2>
               <div className="grid gap-4 sm:grid-cols-2">
                 {takes.map((take) => (
                   <HotTakeCard

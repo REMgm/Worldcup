@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "Worldcup Pulse — the knockout bracket, live";
+export const alt = "Worldcup Signalroom — winning the knockouts";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -51,10 +51,10 @@ export default function OpengraphImage() {
             letterSpacing: -3,
           }}
         >
-          PULSE
+          SIGNALROOM
         </div>
         <div style={{ color: "#B9B7AC", fontSize: 28, marginTop: 24 }}>
-          The bracket is the product. Takes, not tips.
+          Winning the knockouts. Signals, not tips.
         </div>
       </div>
     ),
