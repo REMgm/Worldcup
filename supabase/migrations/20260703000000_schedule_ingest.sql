@@ -3,7 +3,8 @@
 --   every minute → mode=auto  (in-function guard: zero ESPN calls unless a
 --                   fixture is LIVE/kicking off ±10 min; full refresh when
 --                   the cache is older than 6h)
---   06:00 UTC    → mode=daily (whole-tournament range + odds snapshots)
+--   22:00 UTC    → mode=daily (00:00 Netherlands/CEST — nightly full refresh
+--                   so the morning's signals are computed from fresh data)
 --
 -- The Authorization bearer below is the project's PUBLIC anon key (RLS
 -- read-only) — it only satisfies the edge function's JWT gate; writes
@@ -38,7 +39,7 @@ select cron.schedule(
 
 select cron.schedule(
   'wcp-ingest-daily',
-  '0 6 * * *',
+  '0 22 * * *',
   $$select net.http_post(
       url := 'https://svjepmqfemctnyzzyxwc.supabase.co/functions/v1/ingest-espn',
       headers := jsonb_build_object(

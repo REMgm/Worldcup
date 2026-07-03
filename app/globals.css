@@ -82,7 +82,8 @@ body {
 /* Reduced motion disables loops globally (§7 hard rule). Confetti and
    count-ups are guarded in lib/motion.ts / lib/confetti.ts. */
 @media (prefers-reduced-motion: reduce) {
-  .live-dot {
+  .live-dot,
+  .meter-land {
     animation: none;
   }
   html {
@@ -91,6 +92,23 @@ body {
 }
 
 @layer components {
+  /* Gauge landing pulse — the "energy" beat when the needle settles. */
+  @keyframes meter-land {
+    0% {
+      transform: scale(1);
+    }
+    35% {
+      transform: scale(1.18);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  .meter-land {
+    animation: meter-land 0.5s ease-out 1;
+  }
+
   /* Blurred hot-take headline pre-reveal (§7). */
   .take-blur {
     filter: blur(10px);

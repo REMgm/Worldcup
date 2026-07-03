@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { useId, useRef, useState } from "react";
+import ShareButton from "@/components/ShareButton";
 import { fireConfetti } from "@/lib/confetti";
 import { buzz } from "@/lib/haptics";
 import { settle, useCountUp } from "@/lib/motion";
@@ -116,6 +117,14 @@ export default function HotTakeCard({
           >
             <p className="mt-3 text-sm leading-relaxed text-flood-dim">{take.body}</p>
             {take.revealed_stat && <RevealedStat stat={take.revealed_stat} />}
+            <div className="mt-3 flex justify-end">
+              <ShareButton
+                compact
+                title="Worldcup Signalroom"
+                text={`${meta.label}: ${take.headline} — ${take.body}`}
+                url={take.fixture_id != null ? `/match/${take.fixture_id}` : "/"}
+              />
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

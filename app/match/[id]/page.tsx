@@ -5,10 +5,19 @@ import Flag from "@/components/Flag";
 import HotTakeCard from "@/components/HotTakeCard";
 import OddsShift from "@/components/OddsShift";
 import PredictionMeter from "@/components/PredictionMeter";
+import ShareButton from "@/components/ShareButton";
 import StagePill from "@/components/StagePill";
-import { getFixtureById, getHotTakes, getOddsForFixture, getPredictions } from "@/lib/data";
+import TeamSignalSheet from "@/components/TeamSignalSheet";
+import {
+  getFixtureById,
+  getFixtures,
+  getHotTakes,
+  getOddsForFixture,
+  getPredictions,
+} from "@/lib/data";
 import { kickoffDate, kickoffTime } from "@/lib/format";
 import { SIGNAL_LIME } from "@/lib/teamColors";
+import { teamTournamentStats } from "@/lib/teamStats";
 
 export const revalidate = 60;
 
@@ -35,15 +44,34 @@ export default async function MatchPage({ params }: Props) {
   const fixture = await getFixtureById(fixtureId);
   if (!fixture) notFound();
 
-  const [odds, takes, predictions] = await Promise.all([
+  const [odds, takes, predictions, allFixtures] = await Promise.all([
     getOddsForFixture(fixtureId),
     getHotTakes(fixtureId),
     getPredictions([fixtureId]),
+    getFixtures(),
   ]);
 
   const played = fixture.status !== "NS";
   const live = fixture.status === "LIVE" || fixture.status === "HT";
   const chance = predictions.get(fixtureId) ?? null;
+
+  // Signal favor: the higher-percentage side sets the page's color register.
+  const favHome = chance ? chance.home >= chance.away : null;
+  const favTeam = favHome == null ? null : favHome ? fixture.home : fixture.away;
+  const favColor = favTeam?.primary_color ?? SIGNAL_LIME;
+  const favPct = chance ? Math.round((favHome ? chance.home : chance.away) * 100) : null;
+
+  const homeStats =
+    fixture.home_team != null ? teamTournamentStats(allFixtures, fixture.home_team) : null;
+  const awayStats =
+    fixture.away_team != null ? teamTournamentStats(allFixtures, fixture.away_team) : null;
+
+  const shareText =
+    fixture.home && fixture.away
+      ? chance && !played
+        ? `${fixture.home.name} v ${fixture.away.name} — Signalroom win chance: ${fixture.home.code} ${Math.round(chance.home * 100)}% · ${fixture.away.code} ${Math.round(chance.away * 100)}%.`
+        : `${fixture.home.name} ${fixture.home_score ?? ""}–${fixture.away_score ?? ""} ${fixture.away.name} — Worldcup Signalroom.`
+      : "Worldcup Signalroom — winning the knockouts.";
 
   // Signalroom win chance for the favored side: Elo learned from every
   // cached result, anchored to the market. Editorial context only (§3.4).
@@ -66,14 +94,50 @@ export default async function MatchPage({ params }: Props) {
           {kickoffDate(fixture.kickoff)} · {kickoffTime(fixture.kickoff)}
           {fixture.venue ? ` · ${fixture.venue}` : ""}
         </span>
+        <span className="ml-auto">
+          <ShareButton
+            title="Worldcup Signalroom"
+            text={shareText}
+            url={`/match/${fixture.id}`}
+          />
+        </span>
       </div>
 
-      {/* scoreboard */}
-      <div className="mb-10 grid grid-cols-[1fr_auto_1fr] items-center gap-4 rounded-3xl border border-flood/5 bg-pitch-800 p-6 md:p-10">
-        <div className="flex flex-col items-center gap-3 text-center">
-          <Flag team={fixture.home} size={56} />
+      {favTeam && favPct != null && !played && (
+        <div
+          className="data-nums mb-4 inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[11px] font-bold tracking-[0.14em]"
+          style={{ borderColor: favColor, color: favColor }}
+        >
+          ⚽ SIGNAL FAVORS {favTeam.name.toUpperCase()} · {favPct}%
+        </div>
+      )}
+
+      {/* scoreboard — tinted toward the favored side */}
+      <div
+        className="relative mb-10 grid grid-cols-[1fr_auto_1fr] items-center gap-4 overflow-hidden rounded-3xl border border-flood/5 bg-pitch-800 p-6 md:p-10"
+        style={
+          favTeam && !played
+            ? {
+                background: `linear-gradient(${favHome ? 105 : 255}deg, ${favColor}2e 0%, rgba(16,30,23,0) 55%), #101E17`,
+              }
+            : undefined
+        }
+      >
+        {favTeam && !played && (
+          <span
+            aria-hidden
+            className={`pointer-events-none absolute top-1/2 -translate-y-1/2 opacity-[0.08] blur-[2px] ${favHome ? "-left-8" : "-right-8"}`}
+          >
+            <Flag team={favTeam} size={220} />
+          </span>
+        )}
+        <div className="relative flex flex-col items-center gap-3 text-center">
+          <Flag team={fixture.home} size={favHome === true ? 64 : 56} />
           <div>
-            <div className="font-display text-xl font-black text-flood md:text-2xl">
+            <div
+              className="font-display text-xl font-black md:text-2xl"
+              style={{ color: favHome === true ? favColor : "#F5F2E8" }}
+            >
               {fixture.home?.name ?? "TBD"}
             </div>
             <div className="data-nums text-xs text-flood-dim">{fixture.home?.code ?? ""}</div>
@@ -112,10 +176,13 @@ export default async function MatchPage({ params }: Props) {
             <div className="score-display text-4xl text-flood-dim/50 md:text-6xl">vs</div>
           )}
         </div>
-        <div className="flex flex-col items-center gap-3 text-center">
-          <Flag team={fixture.away} size={56} />
+        <div className="relative flex flex-col items-center gap-3 text-center">
+          <Flag team={fixture.away} size={favHome === false ? 64 : 56} />
           <div>
-            <div className="font-display text-xl font-black text-flood md:text-2xl">
+            <div
+              className="font-display text-xl font-black md:text-2xl"
+              style={{ color: favHome === false ? favColor : "#F5F2E8" }}
+            >
               {fixture.away?.name ?? "TBD"}
             </div>
             <div className="data-nums text-xs text-flood-dim">{fixture.away?.code ?? ""}</div>
@@ -167,6 +234,23 @@ export default async function MatchPage({ params }: Props) {
           <OddsShift snapshots={odds} home={fixture.home} away={fixture.away} />
         </div>
       </div>
+
+      {homeStats && awayStats && (
+        <section className="mt-12">
+          <h2 className="mb-1 font-display text-xl font-black text-flood">
+            The numbers behind the signal
+          </h2>
+          <p className="mb-5 text-sm text-flood-dim">
+            Tournament sheets computed from every cached result and goal
+            timeline — the same data the prediction loop learns from.
+          </p>
+          <TeamSignalSheet
+            home={{ team: fixture.home, stats: homeStats }}
+            away={{ team: fixture.away, stats: awayStats }}
+            favHome={played ? null : favHome}
+          />
+        </section>
+      )}
     </div>
   );
 }

@@ -46,9 +46,7 @@ export default function RootLayout({
               href="/"
               className="shrink-0 font-display text-base font-black tracking-tight text-flood sm:text-lg"
             >
-              <span className="hidden sm:inline">WORLDCUP</span>
-              <span className="sm:hidden">WC</span>
-              <span className="text-lime">SIGNALROOM</span>
+              SIGNAL<span className="text-lime">ROOM</span>
             </Link>
             <nav className="flex shrink-0 items-center sm:gap-1">
               {NAV.map((item) => (

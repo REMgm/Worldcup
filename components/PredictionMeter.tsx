@@ -1,13 +1,29 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { useCountUp, usePrefersReducedMotion } from "@/lib/motion";
 import { useInView } from "framer-motion";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { fireConfetti } from "@/lib/confetti";
+import { usePrefersReducedMotion } from "@/lib/motion";
+
+// Ease-out with a small overshoot so the needle swings past the target and
+// settles back — reads as spring physics without detaching from the hub.
+function easeOutBack(t: number): number {
+  const c1 = 1.0;
+  const c3 = c1 + 1;
+  return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+}
+
+const CX = 100;
+const CY = 95;
+const NEEDLE_R = 72;
+const SWEEP_MS = 1200; // §7 hard cap
 
 /**
- * Animated gauge with spring physics (§6). Shows the market-implied chance
- * for the favored side — framed as context, never a tip.
+ * Signalroom win-chance gauge (§6). The needle is drawn from the hub to a
+ * point computed off the animated angle, so it is geometrically anchored to
+ * the center at every frame. On viewport entry it sweeps 0 → predicted
+ * percentage (arc, needle and count-up in lockstep) and lands with an
+ * energy burst. Reduced motion: jump to final, no burst.
  */
 export default function PredictionMeter({
   label,
@@ -22,10 +38,51 @@ export default function PredictionMeter({
   const inView = useInView(ref, { once: true, amount: 0.5 });
   const reduced = usePrefersReducedMotion();
   const p = Math.max(0, Math.min(1, probability));
-  const pct = useCountUp(p * 100, { active: inView });
+  const [progress, setProgress] = useState(0);
+  const [done, setDone] = useState(false);
+  const burstFired = useRef(false);
 
-  // 180° arc, radius 80, centered at (100, 95).
-  const angle = inView ? -180 + p * 180 : -180;
+  useEffect(() => {
+    if (!inView) return;
+    if (reduced) {
+      setProgress(1);
+      setDone(true);
+      return;
+    }
+    const start = performance.now();
+    let raf = 0;
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / SWEEP_MS);
+      setProgress(easeOutBack(t));
+      if (t < 1) {
+        raf = requestAnimationFrame(tick);
+      } else {
+        setProgress(1);
+        setDone(true);
+      }
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [inView, reduced]);
+
+  // The energy burst: team-colored spray from the gauge as the needle lands.
+  useEffect(() => {
+    if (!done || reduced || burstFired.current || !ref.current) return;
+    burstFired.current = true;
+    const rect = ref.current.getBoundingClientRect();
+    fireConfetti({
+      x: (rect.left + rect.width / 2) / window.innerWidth,
+      y: (rect.top + rect.height / 2) / window.innerHeight,
+      colors: [color, "#F5F2E8"],
+      particleCount: 120,
+    });
+  }, [done, reduced, color]);
+
+  const sweep = Math.max(0, progress) * p; // fraction of the semicircle
+  const angle = (-180 + Math.min(sweep, 1) * 180) * (Math.PI / 180);
+  const x2 = CX + NEEDLE_R * Math.cos(angle);
+  const y2 = CY + NEEDLE_R * Math.sin(angle);
+  const pct = Math.round(Math.min(sweep, 1) * 100);
 
   return (
     <div
@@ -41,42 +98,32 @@ export default function PredictionMeter({
           strokeWidth="12"
           strokeLinecap="round"
         />
-        <motion.path
+        <path
           d="M20 95 A80 80 0 0 1 180 95"
           fill="none"
           stroke={color}
           strokeWidth="12"
           strokeLinecap="round"
-          initial={{ pathLength: reduced ? p : 0 }}
-          animate={{ pathLength: inView ? p : 0 }}
-          transition={
-            reduced
-              ? { duration: 0 }
-              : { type: "spring", stiffness: 120, damping: 20 }
-          }
+          pathLength={1}
+          strokeDasharray={`${Math.min(sweep, 1)} 1`}
+          style={done ? { filter: `drop-shadow(0 0 8px ${color})` } : undefined}
         />
-        {/* needle — transformBox: view-box makes the origin resolve in SVG
-            user units, so it pivots on the gauge hub, not its own bbox */}
-        <motion.line
-          x1="100"
-          y1="95"
-          x2="172"
-          y2="95"
+        {/* needle — endpoint computed from the animated angle, always hub-anchored */}
+        <line
+          x1={CX}
+          y1={CY}
+          x2={x2}
+          y2={y2}
           stroke="#F5F2E8"
           strokeWidth="2.5"
           strokeLinecap="round"
-          style={{ transformBox: "view-box", transformOrigin: "100px 95px" }}
-          initial={{ rotate: -180 }}
-          animate={{ rotate: angle }}
-          transition={
-            reduced
-              ? { duration: 0 }
-              : { type: "spring", stiffness: 120, damping: 14 }
-          }
         />
-        <circle cx="100" cy="95" r="5" fill="#F5F2E8" />
+        <circle cx={CX} cy={CY} r="5" fill="#F5F2E8" />
       </svg>
-      <div className="data-nums -mt-2 text-4xl font-bold" style={{ color }}>
+      <div
+        className={`data-nums -mt-2 text-4xl font-bold ${done && !reduced ? "meter-land" : ""}`}
+        style={{ color }}
+      >
         {pct}%
       </div>
       <div className="mt-1 text-center text-xs text-flood-dim">{label}</div>
