@@ -1,0 +1,81 @@
+import type { Metadata, Viewport } from "next";
+import Link from "next/link";
+import ConfettiLayer from "@/components/ConfettiLayer";
+import LiveTicker from "@/components/LiveTicker";
+// Type system (§8): condensed/expanded grotesque display, humanist body,
+// tabular-nums mono for every number on the site. Self-hosted variable
+// fonts (no build-time Google Fonts fetch).
+import "@fontsource-variable/archivo/wdth.css";
+import "@fontsource-variable/inter";
+import "@fontsource-variable/jetbrains-mono";
+import "./globals.css";
+
+export const metadata: Metadata = {
+  title: {
+    default: "Worldcup Signalroom — winning the knockouts",
+    template: "%s · Worldcup Signalroom",
+  },
+  description:
+    "Live knockout bracket, win-chance signals, match momentum and player form. Editorial signals, not tips.",
+  openGraph: {
+    title: "Worldcup Signalroom",
+    description: "Winning the knockouts. Signals, not tips.",
+    type: "website",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0A1410",
+};
+
+const NAV = [
+  { href: "/", label: "Matches" },
+  { href: "/bracket", label: "Bracket" },
+  { href: "/players", label: "Form" },
+] as const;
+
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
+  return (
+    <html lang="en" className="bg-pitch-900">
+      <body className="min-h-dvh antialiased">
+        <header className="sticky top-0 z-50 glass-overlay border-x-0 border-t-0">
+          <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-2 px-3 sm:px-4">
+            <Link
+              href="/"
+              className="shrink-0 font-display text-base font-black tracking-tight text-flood sm:text-lg"
+            >
+              SIGNAL<span className="text-lime">ROOM</span>
+            </Link>
+            <nav className="flex shrink-0 items-center sm:gap-1">
+              {NAV.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="flex min-h-11 items-center rounded-full px-2.5 text-[13px] font-medium text-flood-dim transition-colors hover:bg-pitch-700 hover:text-flood sm:px-4 sm:text-sm"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+        </header>
+
+        {/* Bottom padding keeps content clear of the thumb-anchored ticker (§9). */}
+        <main className="mx-auto max-w-6xl px-4 pb-32 md:pb-20">{children}</main>
+
+        <footer className="mx-auto max-w-6xl px-4 pb-40 pt-8 text-xs text-flood-dim/70 md:pb-24">
+          <p>
+            Odds shown as editorial context only — takes, not tips. No betting
+            CTAs, no affiliates. Player imagery: satirical caricature register;
+            licensed photos as fallback.
+          </p>
+        </footer>
+
+        <LiveTicker />
+        <ConfettiLayer />
+      </body>
+    </html>
+  );
+}

@@ -1,0 +1,132 @@
+@import "tailwindcss";
+
+/* Design tokens (§8): photoreal broadcast world, satirical cast.
+   Dark pitch-green-black base, electric lime signal, warm floodlight white. */
+@theme {
+  --color-pitch-950: #060d09;
+  --color-pitch-900: #0a1410; /* base */
+  --color-pitch-800: #101e17;
+  --color-pitch-700: #17291f;
+  --color-pitch-600: #21382b;
+  --color-lime: #c8f542; /* electric lime signal */
+  --color-lime-dim: #9cc433;
+  --color-flood: #f5f2e8; /* warm floodlight white */
+  --color-flood-dim: #b9b7ac;
+  --color-ember: #ff6b4a; /* spicy takes only */
+  --color-live: #ff3b3b; /* broadcast-red live indicator */
+
+  --font-display: "Archivo Variable", "Arial Narrow", sans-serif;
+  --font-body: "Inter Variable", system-ui, sans-serif;
+  --font-data: "JetBrains Mono Variable", ui-monospace, monospace;
+}
+
+html,
+body {
+  /* Full-bleed sections and the fixed ticker must never widen the page —
+     no sideways panning on mobile. */
+  overflow-x: clip;
+}
+
+body {
+  background: var(--color-pitch-900);
+  color: var(--color-flood);
+  font-family: var(--font-body);
+}
+
+::selection {
+  background: var(--color-lime);
+  color: var(--color-pitch-900);
+}
+
+@layer components {
+  /* Scores set huge, tabular, tight tracking — the typographic signature (§8). */
+  .score-display {
+    font-family: var(--font-data);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.06em;
+    font-weight: 700;
+  }
+
+  .data-nums {
+    font-family: var(--font-data);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Glassmorphism is allowed on overlay layers only (ticker, modals) — never
+     on content cards (§8). */
+  .glass-overlay {
+    background: color-mix(in srgb, var(--color-pitch-900) 72%, transparent);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid color-mix(in srgb, var(--color-flood) 10%, transparent);
+  }
+
+  /* Live status pulse: scale 1→1.35→1 opacity loop, 2s, only while LIVE (§7). */
+  @keyframes live-pulse {
+    0%,
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.35);
+      opacity: 0.55;
+    }
+  }
+
+  .live-dot {
+    animation: live-pulse 2s ease-in-out infinite;
+  }
+}
+
+/* Reduced motion disables loops globally (§7 hard rule). Confetti and
+   count-ups are guarded in lib/motion.ts / lib/confetti.ts. */
+@media (prefers-reduced-motion: reduce) {
+  .live-dot,
+  .meter-land {
+    animation: none;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+@layer components {
+  /* Gauge landing pulse — the "energy" beat when the needle settles. */
+  @keyframes meter-land {
+    0% {
+      transform: scale(1);
+    }
+    35% {
+      transform: scale(1.18);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  .meter-land {
+    animation: meter-land 0.5s ease-out 1;
+  }
+
+  /* Blurred hot-take headline pre-reveal (§7). */
+  .take-blur {
+    filter: blur(10px);
+    user-select: none;
+    transition: filter 0.25s ease;
+  }
+
+  .take-blur.revealed {
+    filter: blur(0);
+  }
+
+  /* Bracket horizontal snap scroll on mobile (§9). */
+  .bracket-scroll {
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .bracket-scroll > * {
+    scroll-snap-align: center;
+  }
+}
